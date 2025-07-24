@@ -79,6 +79,7 @@ public:
 	void SetMouseActivated(bool state);
 	CMStatus GetChallengeStatus();
 	int GetSplitScreenPlayerSlot(void *entity);
+	static Vector GetPlayerSize(bool ducked);
 	void ClFrameStageNotify(int stage);
 	void OpenChat();
 
@@ -189,6 +190,7 @@ extern Variable cl_showpos;
 extern Variable cl_sidespeed;
 extern Variable cl_backspeed;
 extern Variable cl_forwardspeed;
+extern Variable hidehud;
 extern Variable in_forceuser;
 extern Variable cl_fov;
 extern Variable prevent_crouch_jump;

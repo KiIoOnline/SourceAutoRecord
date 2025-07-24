@@ -269,6 +269,7 @@
 |sar_hud_portals|0|Draws total portal count.|
 |sar_hud_position|0|Draws absolute position of the client.<br>0 = Default,<br>1 = Player position,<br>2 = Camera (shoot) position.|
 |sar_hud_precision|2|Precision of HUD numbers.|
+|sar_hud_precision_disable_warning|cmd|sar_hud_precision_disable_warning {lp\|reset} - Disables the warning about high precision values in HUD.|
 |sar_hud_rainbow|-1|Enables the rainbow HUD mode. -1 = default, 0 = disable, 1 = enable.|
 |sar_hud_session|0|Draws current session tick.|
 |sar_hud_set_text|cmd|sar_hud_set_text \<id> \<text>... - sets and shows the nth text value in the HUD|
@@ -493,6 +494,7 @@
 |sar_show_entinp|0|Print all entity inputs to console.|
 |sar_skiptodemo|cmd|sar_skiptodemo \<demoname> - skip demos in demo queue to this demo|
 |sar_speedrun_autoreset_clear|cmd|sar_speedrun_autoreset_clear - stop using the autoreset file|
+|sar_speedrun_autoreset_invert|0|Invert the autoreset behavior. If set to 1, automatically reset if the last split was *faster* than the defined time.|
 |sar_speedrun_autoreset_load|cmd|sar_speedrun_autoreset_load \<file> - load the given file of autoreset timestamps and use it while the speedrun timer is active|
 |sar_speedrun_autostop|0|Automatically stop recording demos when a speedrun finishes. If 2, automatically append the run time to the demo name.|
 |sar_speedrun_category|cmd|sar_speedrun_category [category] - get or set the speedrun category|
@@ -530,9 +532,11 @@
 |sar_speedrun_stop_in_menu|0|Automatically stop the speedrun timer when the menu is loaded.|
 |sar_speedrun_time_pauses|0|Include time spent paused in the speedrun timer.|
 |sar_speedrun_triggers_info|0|Print player velocity (and position) upon mtrigger activation.<br>1 - position and velocity<br>2 - only horizontal velocity|
-|sar_sr_hud|0|Draws speedrun timer.|
+|sar_sr_hud|0|Draws speedrun timer. 1 = speedrun timer, 2 = speedrun and split timer.|
+|sar_sr_hud_bg|0|Draw a background behind the speedrun timer.|
 |sar_sr_hud_font_color|255 255 255 255|RGBA font color of speedrun timer HUD.|
 |sar_sr_hud_font_index|70|Font index of speedrun timer HUD.|
+|sar_sr_hud_font_index_2|71|Font index of speedrun split timer HUD.|
 |sar_sr_hud_x|0|X offset of speedrun timer HUD.|
 |sar_sr_hud_y|100|Y offset of speedrun timer HUD.|
 |sar_startdemos|cmd|sar_startdemos \<demoname> - improved version of startdemos. Use 'stopdemo' to stop playing demos|
@@ -617,6 +621,7 @@
 |sar_timer_stop|cmd|sar_timer_stop - stops timer|
 |sar_timer_time_pauses|1|Timer adds non-simulated ticks when server pauses.|
 |sar_toast_align|0|The side to align toasts to horizontally. 0 = left, 1 = center, 2 = right.|
+|sar_toast_align_text|0|The side to align text to inside toasts horizontally. 0 = left, 1 = center, 2 = right.|
 |sar_toast_anchor|1|Where to put new toasts. 0 = bottom, 1 = top.|
 |sar_toast_background|1|Sets the background highlight for toasts. 0 = no background, 1 = text width only, 2 = full width.|
 |sar_toast_compact|0|Enables a compact form of the toasts HUD.|
@@ -653,14 +658,17 @@
 |sar_trace_font_size|3.0|The size of text overlaid on recorded traces.|
 |sar_trace_hide|cmd|sar_trace_hide [trace name] - hide the trace with the given name|
 |sar_trace_override|1|Clears old trace when you start recording to it instead of recording on top of it.|
+|sar_trace_playback_rate|0|Playback rate of the trace bbox. Loops upon finishing.|
 |sar_trace_portal_opacity|100|Opacity of trace portal previews.|
 |sar_trace_portal_oval|0|Draw trace portals as ovals rather than rectangles.|
 |sar_trace_portal_record|1|Record portal locations.|
 |sar_trace_record|0|Record the trace to a slot. Set to 0 for not recording|
+|sar_trace_reveal|0|Only draw traces until the specified tick. Set to bbox to draw until the bbox tick.|
 |sar_trace_show|cmd|sar_trace_show [trace name] - show the trace with the given name|
 |sar_trace_teleport_at|cmd|sar_trace_teleport_at \<tick> [player slot] [trace name] - teleports the player at the given trace tick on the given trace ID (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).|
 |sar_trace_teleport_eye|cmd|sar_trace_teleport_eye \<tick> [player slot] [trace name] - teleports the player to the eye position at the given trace tick on the given trace (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).|
 |sar_trace_use_shot_eyeoffset|1|Uses eye offset and angles accurate for portal shooting.|
+|sar_trace_vphys_record|1|Record vphysics locations of dynamic entities for analysis.|
 |sar_transition_timer|0|Output how slow your dialogue fade was.|
 |sar_twitch_chat_channel||The Twitch channel to connect to.|
 |sar_twitch_chat_color|255 255 255|The color of the Twitch chat messages.|

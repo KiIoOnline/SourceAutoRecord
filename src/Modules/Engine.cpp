@@ -110,6 +110,12 @@ float Engine::GetIPT() { // IntervalPerTick
 	}
 	return 1.0f / sar.game->Tickrate();
 }
+int Engine::GetMaxClients() {
+	if (this->GetMaxClientsOrig() == 0 && this->hoststate->m_activeGame) {
+		return server->gpGlobals->maxClients;
+	}
+	return this->GetMaxClientsOrig();
+}
 int Engine::GetTick() {
 	return (this->GetMaxClients() < 2 || engine->demoplayer->IsPlaying()) ? *this->tickcount : TIME_TO_TICKS(*this->net_time);
 }
@@ -467,6 +473,9 @@ DETOUR(Engine::PurgeUnusedModels) {
 	console->DevMsg("PurgeUnusedModels - %dms\n", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
 	return result;
 }
+
+Memory::Patch *g_ReadCustomDataPatch = nullptr;
+Memory::Patch *g_ReadConsoleCommandPatch = nullptr;
 
 DETOUR(Engine::ReadCustomData, int *callbackIndex, char **data) {
 	auto size = Engine::ReadCustomData(thisptr, callbackIndex, data);
@@ -975,7 +984,7 @@ bool Engine::Init() {
 		this->GetLocalPlayer = this->engineClient->Original<_GetLocalPlayer>(Offsets::GetLocalPlayer);
 		this->GetViewAngles = this->engineClient->Original<_GetViewAngles>(Offsets::GetViewAngles);
 		this->SetViewAngles = this->engineClient->Original<_SetViewAngles>(Offsets::SetViewAngles);
-		this->GetMaxClients = this->engineClient->Original<_GetMaxClients>(Offsets::GetMaxClients);
+		this->GetMaxClientsOrig = this->engineClient->Original<_GetMaxClients>(Offsets::GetMaxClients);
 		this->GetGameDirectory = this->engineClient->Original<_GetGameDirectory>(Offsets::GetGameDirectory);
 		this->GetSaveDirName = this->engineClient->Original<_GetSaveDirName>(Offsets::GetSaveDirName);
 		this->DebugDrawPhysCollide = this->engineClient->Original<_DebugDrawPhysCollide>(Offsets::DebugDrawPhysCollide);
@@ -1127,20 +1136,20 @@ bool Engine::Init() {
 	Cmd_ExecuteCommand_Hook.SetFunc(g_Cmd_ExecuteCommand);
 	InsertCommand_Hook.SetFunc(g_InsertCommand);
 
-	this->readCustomDataInjectAddr = Memory::Scan(this->Name(), Offsets::readCustomDataInjectSig, Offsets::readCustomDataInjectOff);
-	this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), Offsets::readConsoleCommandInjectSig, Offsets::readConsoleCommandInjectOff);
-	if (this->readCustomDataInjectAddr && this->readConsoleCommandInjectAddr) {
-		// Pesky memory protection doesn't want us overwriting code - we
-		// get around it with a call to mprotect or VirtualProtect
-		Memory::UnProtect((void *)this->readCustomDataInjectAddr, 4);
-		Memory::UnProtect((void *)this->readConsoleCommandInjectAddr, 4);
+	g_ReadCustomDataPatch = new Memory::Patch();
+	auto readCustomDataInjectAddr = Memory::Scan(this->Name(), Offsets::readCustomDataInjectSig, Offsets::readCustomDataInjectOff);
+	if (readCustomDataInjectAddr) {
+		Engine::ReadCustomData = (_ReadCustomData)Memory::Read(readCustomDataInjectAddr);
+		auto ReadCustomDataInject = (uint32_t)&ReadCustomData_Hook - (readCustomDataInjectAddr + 4);
+		g_ReadCustomDataPatch->Execute(readCustomDataInjectAddr, (unsigned char *)&ReadCustomDataInject, 4);
+	}
 
-		// It's a relative call, so we have to do some weird fuckery lol
-		Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t *)this->readCustomDataInjectAddr + (this->readCustomDataInjectAddr + 4));
-		*(uint32_t *)this->readCustomDataInjectAddr = (uint32_t)&ReadCustomData_Hook - (this->readCustomDataInjectAddr + 4);  // Add 4 to get address of next instruction
-
-		Engine::ReadConsoleCommand = (_ReadConsoleCommand)Memory::Read(this->readConsoleCommandInjectAddr);
-		*(uint32_t *)this->readConsoleCommandInjectAddr = (uint32_t)&ReadConsoleCommand_Hook - (this->readConsoleCommandInjectAddr + 4);
+	g_ReadConsoleCommandPatch = new Memory::Patch();
+	auto readConsoleCommandInjectAddr = Memory::Scan(this->Name(), Offsets::readConsoleCommandInjectSig, Offsets::readConsoleCommandInjectOff);
+	if (readConsoleCommandInjectAddr) {
+		Engine::ReadConsoleCommand = (_ReadConsoleCommand)Memory::Read(readConsoleCommandInjectAddr);
+		auto ReadConsoleCommandInject = (uint32_t)&ReadConsoleCommand_Hook - (readConsoleCommandInjectAddr + 4);
+		g_ReadConsoleCommandPatch->Execute(readConsoleCommandInjectAddr, (unsigned char *)&ReadConsoleCommandInject, 4);
 	}
 
 	if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay004", false)) {
@@ -1229,15 +1238,10 @@ void Engine::Shutdown() {
 	Interface::Delete(this->g_physCollision);
 
 	// Reset to the offsets that were originally in the code
-	if (this->readCustomDataInjectAddr && this->readConsoleCommandInjectAddr) {
-#ifdef _WIN32
-		*(uint32_t *)this->readCustomDataInjectAddr = 0x50E8458D;
-		*(uint32_t *)this->readConsoleCommandInjectAddr = 0x000491E3;
-#else
-		*(uint32_t *)this->readCustomDataInjectAddr = 0x08244489;
-		*(uint32_t *)this->readConsoleCommandInjectAddr = 0x0008155A;
-#endif
-	}
+	g_ReadCustomDataPatch->Restore();
+	g_ReadConsoleCommandPatch->Restore();
+	SAFE_DELETE(g_ReadCustomDataPatch)
+	SAFE_DELETE(g_ReadConsoleCommandPatch)
 
 #ifdef _WIN32
 	MH_UNHOOK(Engine::ParseSmoothingInfo_Mid);

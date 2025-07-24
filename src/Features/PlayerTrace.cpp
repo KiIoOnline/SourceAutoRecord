@@ -37,6 +37,11 @@ Variable sar_trace_draw_time("sar_trace_draw_time", "3", 0, 3,
 );
 Variable sar_trace_font_size("sar_trace_font_size", "3.0", 0.1, "The size of text overlaid on recorded traces.\n");
 
+Variable sar_trace_vphys_record("sar_trace_vphys_record", "1", 0, 1, "Record vphysics locations of dynamic entities for analysis.\n");
+
+Variable sar_trace_reveal("sar_trace_reveal", "0", "Only draw traces until the specified tick. Set to bbox to draw until the bbox tick.\n");
+Variable sar_trace_playback_rate("sar_trace_playback_rate", "0", "Playback rate of the trace bbox. Loops upon finishing.\n");
+
 Variable sar_trace_bbox_at("sar_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.\n");
 Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", 0, 1, "Move trace bbox to hovered trace point tick on given trace.\n");
 Variable sar_trace_bbox_ent_record("sar_trace_bbox_ent_record", "1", "Record hitboxes of nearby entities in the trace. You may want to disable this if memory consumption gets too high.\n");
@@ -272,7 +277,14 @@ void PlayerTrace::DrawInWorld() const {
 			float speed = trace.velocities[slot][0].Length2D();
 			unsigned groundframes = trace.grounded[slot][0];
 
-			for (size_t i = 0; i < trace.positions[slot].size(); i++) {
+			size_t end_tick = trace.positions[slot].size() - 1;
+			if (sar_trace_reveal.GetInt() > 0) {
+				end_tick = (std::min)(end_tick, (size_t)tickUserToInternal(sar_trace_reveal.GetInt() + 1, trace));
+			} else if (!strcmp(sar_trace_reveal.GetString(), "bbox")) {
+				end_tick = (std::min)(end_tick, (size_t)tickUserToInternal(sar_trace_bbox_at.GetInt() + 1, trace));
+			}
+
+			for (size_t i = 0; i < end_tick; i++) {
 				Vector new_pos = trace.positions[slot][i];
 				speed = trace.velocities[slot][i].Length2D();
 				
@@ -384,8 +396,8 @@ void PlayerTrace::DrawSpeedDeltas() const {
 	}
 }
 void PlayerTrace::DrawBboxAt(int tick) const {
-	static const Vector player_standing_size = {32, 32, 72};
-	static const Vector player_ducked_size = {32, 32, 36};
+	auto player_standing_size = client->GetPlayerSize(false);
+	auto player_ducked_size = client->GetPlayerSize(true);
 		
 	for (int slot = 0; slot < 2; slot++) {
 		for (const auto &[trace_idx, trace] : traces) {
@@ -665,6 +677,7 @@ HitboxList PlayerTrace::ConstructHitboxList(Vector center) const {
 }
 
 VphysLocationList PlayerTrace::ConstructVphysLocationList() const {
+	if (!sar_trace_vphys_record.GetBool()) return VphysLocationList{};
 	VphysLocationList locationList;
 
 	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
@@ -709,6 +722,11 @@ VphysLocationList PlayerTrace::ConstructVphysLocationList() const {
 
 PortalLocations PlayerTrace::ConstructPortalLocations() const {
 	if (!sar_trace_portal_record.GetBool()) return PortalLocations{};
+	if (sar.game->Is(SourceGame_BeginnersGuide | SourceGame_StanleyParable | SourceGame_INFRA)) {
+		// Portals are not present in these games
+		// Let's not loop through every single entity every tick
+		return PortalLocations{};
+	}
 
 	PortalLocations portals;
 
@@ -809,6 +827,28 @@ void PlayerTrace::CheckTraceChanged() {
 ON_EVENT(SESSION_START) {
 	if (sar_trace_autoclear.GetBool())
 		playerTrace->ClearAll();
+}
+
+ON_EVENT(PRE_TICK) {
+	if (sar_trace_playback_rate.GetFloat() > 0) {
+		playerTrace->Playback();
+	}
+}
+
+void PlayerTrace::Playback() {
+	float tick = sar_trace_bbox_at.GetFloat() + sar_trace_playback_rate.GetFloat();
+
+	size_t max_tick = 0;
+	for (auto it = playerTrace->traces.begin(); it != playerTrace->traces.end(); ++it) {
+		const Trace &trace = it->second;
+		max_tick = (std::max)(max_tick, trace.positions[0].size());
+		max_tick = (std::max)(max_tick, trace.positions[1].size());
+	}
+
+	if ((size_t)tick > max_tick) {
+		tick = 0;
+	}
+	sar_trace_bbox_at.SetValue(tick);
 }
 
 void PlayerTrace::DrawTraceHud(HudContext *ctx) {

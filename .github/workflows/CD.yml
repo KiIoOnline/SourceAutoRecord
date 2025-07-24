@@ -4,10 +4,15 @@ on:
   push:
     tags: '*'
 
+permissions:
+  contents: read
+
 jobs:
   build-lin:
     name: Linux Build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,10 +50,12 @@ jobs:
             -F "count=1" \
             -F "hashes[0]=$(sha256sum sar.so | cut -d ' ' -f 1)" \
             -F "files[0]=@sar.so" \
-            "https://dl.sar.portal2.sr/api/v1/upload"
+            "https://dl.sar.portal2.jonesy.moe/api/v1/upload"
   build-win:
     name: Windows Build
-    runs-on: windows-2019
+    runs-on: windows-latest
+    permissions:
+      contents: write
     env:
       POWERSHELL_TELEMETRY_OPTOUT: 1
     steps:
@@ -57,6 +64,17 @@ jobs:
         with: { fetch-depth: 0 }
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: '16.11'
+      - name: Install VS2019 Build Tools and SDK
+        shell: powershell
+        run: |
+          Invoke-WebRequest -Uri "https://aka.ms/vs/16/release/vs_buildtools.exe" -OutFile "vs_buildtools.exe"
+          Start-Process -FilePath "vs_buildtools.exe" -ArgumentList `
+            "--quiet", "--wait", "--norestart", "--nocache", `
+            "--installPath", "C:\BuildTools", `
+            "--add", "Microsoft.VisualStudio.Component.Windows10SDK.18362", `
+            "--add", "Microsoft.VisualStudio.Component.VC.142.x86.x64" -Wait
       - name: Build
         env:
           RELEASE_BUILD: 1
@@ -95,12 +113,14 @@ jobs:
             -F "hashes[1]=$(sha256sum bin/sar.pdb | cut -d ' ' -f 1)" \
             -F "files[0]=@bin/sar.dll" \
             -F "files[1]=@bin/sar.pdb" \
-            "https://dl.sar.portal2.sr/api/v1/upload"
+            "https://dl.sar.portal2.jonesy.moe/api/v1/upload"
   release:
     name: Release
     if: github.repository == 'p2sr/SourceAutoRecord'
     needs: [build-lin, build-win]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Get Release Version
         id: get_release
