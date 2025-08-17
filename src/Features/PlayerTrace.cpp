@@ -336,7 +336,7 @@ void PlayerTrace::DrawInWorld() const {
 					// yellow: can't turn further
 					// green: speed>300
 					Vector vel = trace.velocities[slot][i];
-					MeshId mesh =
+					MeshId &mesh =
 						groundframes > 1 ? mesh_grounded :
 						speed < 300      ? mesh_under300 :
 						fabsf(vel.x) >= 150 && fabsf(vel.y) >= 150 ? mesh_airlocked :
