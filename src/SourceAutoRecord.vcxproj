@@ -90,7 +90,8 @@
       <Command>call ..\genversion.bat</Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>call ..\copy.bat</Command>
+      <Command>call ..\copy.bat
+copy $(TargetPath) "E:\SteamLibrary\steamapps\common\Portal 2\portal2\sardev.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
