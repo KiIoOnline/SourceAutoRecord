@@ -41,6 +41,7 @@ For features and installation instructions, please visit [the website].
 | [Thinking with Time Machine](https://store.steampowered.com/app/286080) | ✔       | ✔     |
 | [Portal Reloaded](https://store.steampowered.com/app/1255980)           | ✔       | ✔     |
 | [INFRA](https://store.steampowered.com/app/251110)                      | ✔       | ➖     |
+| [The Cleaning Game](https://store.steampowered.com/app/3281900/The_Cleaning_Game/)                      | ✔       | ➖     |
 | [The Beginner's Guide](https://store.steampowered.com/app/303210)       | ✔       | ❌ (yet) |
 | [The Stanley Parable](https://store.steampowered.com/app/221910)        | ✔       | ❌ (yet) |
 
