@@ -16,6 +16,15 @@ struct DataGhost {
 	QAngle view_angle;
 	float view_offset;
 	bool grounded;
+
+    static DataGhost Invalid() { 
+		return {{NAN, NAN, NAN}, {NAN, NAN, NAN}, NAN, false}; 
+	}
+	bool IsValid() const {
+		return !std::isnan(position.x) && !std::isnan(position.y) && !std::isnan(position.z) 
+			&& !std::isnan(view_angle.x) && !std::isnan(view_angle.y) && !std::isnan(view_angle.z) 
+			&& !std::isnan(view_offset);
+	}
 };
 
 enum class GhostType {

@@ -11,7 +11,6 @@
 [![CI](https://github.com/p2sr/SourceAutoRecord/workflows/CI/badge.svg)](https://github.com/p2sr/SourceAutoRecord/actions?query=workflow%3ACI+branch%3Amaster)
 [![CD](https://github.com/p2sr/SourceAutoRecord/workflows/CD/badge.svg)](https://github.com/p2sr/SourceAutoRecord/actions?query=workflow%3ACD+branch%3Amaster)
 [![Latest release](https://img.shields.io/github/v/release/p2sr/SourceAutoRecord?label=latest%20release)](https://github.com/p2sr/SourceAutoRecord/releases/latest)
-[![Latest prerelease](https://img.shields.io/github/v/release/p2sr/SourceAutoRecord?label=latest%20pre-release&include_prereleases)](https://github.com/p2sr/SourceAutoRecord/releases)
 [![License](https://img.shields.io/github/license/p2sr/SourceAutoRecord)](https://github.com/p2sr/SourceAutoRecord/blob/master/LICENSE)
 
 </div>
@@ -43,6 +42,8 @@ For features and installation instructions, please visit [the website].
 | [INFRA](https://store.steampowered.com/app/251110)                      | ✔       | ➖     |
 | [The Beginner's Guide](https://store.steampowered.com/app/303210)       | ✔       | ❌ (yet) |
 | [The Stanley Parable](https://store.steampowered.com/app/221910)        | ✔       | ❌ (yet) |
+| [The Cleaning Game](https://store.steampowered.com/app/3281900)         | ✔       | ➖     |
+| Divinity Chapter 2 *(closed beta)*                                      | ✔       | ❓     |
 
 If you're playing a game with no Linux support, you can use Proton to run it.
 

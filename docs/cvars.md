@@ -43,10 +43,11 @@
 |-ghost_list|cmd|-ghost_list - disable the ghost list HUD|
 |ghost_list|cmd|ghost_list - list all players in the current ghost server|
 |ghost_list_font|0|Font index for ghost list HUD.|
-|ghost_list_mode|0|Mode for ghost list HUD. 0 = all players, 1 = current map|
+|ghost_list_mode|0|Mode for ghost list HUD. 0 = all players, 1 = current map, 2 = dip|
 |ghost_list_show_map|0|Show the map name in the ghost list HUD.|
 |ghost_list_x|2|X position of ghost list HUD.|
 |ghost_list_y|-2|Y position of ghost list HUD.|
+|ghost_locator|cmd|ghost_locator - Sends a coop-like ping to other ghosts|
 |ghost_message|cmd|ghost_message - send message to other players|
 |ghost_name|cmd|ghost_name - change your online name|
 |ghost_name_font_size|5.0|The size to render ghost names at.|
@@ -77,10 +78,14 @@
 |ghost_start|cmd|ghost_start - start ghosts|
 |ghost_sync|0|When loading a new level, pauses the game until other players load it.|
 |ghost_sync_countdown|3|The number of seconds of countdown to show at the start of every synced map. 0 to disable.|
+|ghost_taunt|cmd|ghost_taunt \<animation_name> - Plays a taunt animation|
 |ghost_TCP_only|0|Uses only TCP for ghost servers. For people with unreliable internet.|
 |ghost_text_offset|7|Offset of the name over the ghosts.|
 |ghost_type|cmd|ghost_type \<0/1/2/3/4>:<br>0: Colored circle<br>1: Colored pyramid<br>2: Colored pyramid with portal gun (RECORDED IN DEMOS)<br>3: Prop model (RECORDED IN DEMOS)<br>4: Bendy|
 |ghost_update_rate|50|Milliseconds between ghost updates. For people with slow/metered internet.|
+|+ghost_voice|cmd|+ghost_voice - push to talk in voice chat|
+|-ghost_voice|cmd|-ghost_voice - push to talk in voice chat|
+|ghost_volume|1.0|Voice chat volume multiplier.|
 |hwait|cmd|hwait \<tick> \<command> [args...] - run a command after the given number of host ticks|
 |nop|cmd|nop [args]... - nop ignores all its arguments and does nothing|
 |sar_about|cmd|sar_about - prints info about SAR plugin|
@@ -107,7 +112,9 @@
 |sar_avg_stop|cmd|sar_avg_stop - stops average calculation|
 |sar_bink_respect_host_time|1|Make BINK video playback respect host time.|
 |sar_cam_control|0|sar_cam_control \<type>: Change type of camera control.<br>0 = Default (camera is controlled by game engine),<br>1 = Drive mode (camera is separated and can be controlled by user input),<br>2 = Cinematic mode (camera is controlled by predefined path).<br>3 = Follow mode (Camera is following the player but not rotating, useful when strafing on gel).|
-|sar_cam_drive|1|Enables or disables camera drive mode in-game (turning it on is not required for demo player)|
+|sar_cam_drive|2|Enables or disables camera drive mode in-game (turning it on is not required for demo player)<br>1 = enabled when LMB is held<br>2 = always enabled|
+|sar_cam_drive_base_speed|175|Base speed of camera drive mode, in units per seconds.|
+|sar_cam_drive_buildup_scale|0.5|Defines how much to increase multiplier of drive speed over time of movement every second.|
 |sar_cam_force_eye_pos|0|Forces camera to be placed exactly on the player's eye position|
 |sar_cam_ortho|0|Enables or disables camera orthographic projection.|
 |sar_cam_ortho_nearz|1|Changes the near Z plane of orthographic projection.|
@@ -121,6 +128,8 @@
 |sar_cam_path_remkfs|cmd|sar_cam_path_remkfs - removes all camera path keyframes|
 |sar_cam_path_setkf|cmd|sar_cam_path_setkf [frame] [x] [y] [z] [pitch] [yaw] [roll] [fov] - sets the camera path keyframe|
 |sar_cam_path_showkf|cmd|sar_cam_path_showkf \<frame> - display information about camera path keyframe at specified frame|
+|sar_cam_path_start|cmd|sar_cam_path_start - starts playback of predefined camera path. (requires camera Cinematic Mode)|
+|sar_cam_path_sync_to_demo|1|If enabled, path will be synchronized to demo in cinematic mode.|
 |sar_cam_reset|cmd|sar_cam_reset - resets camera to its default position|
 |sar_cam_setang|cmd|sar_cam_setang \<pitch> \<yaw> [roll] - sets camera angle (requires camera Drive Mode)|
 |sar_cam_setfov|cmd|sar_cam_setfov \<fov> - sets camera field of view (requires camera Drive Mode)|
@@ -165,6 +174,7 @@
 |sar_demo_portal_interp_fix|1|Fix eye interpolation through portals in demo playback.|
 |sar_demo_remove_broken|1|Whether to remove broken frames from demo playback|
 |sar_demo_replay|cmd|sar_demo_replay - play the last recorded or played demo|
+|sar_disable_autograb|0|Disables the auto-grab in coop. Requires host to enable it for everyone that also enables it.|
 |<i title="Portal 2">sar_disable_challenge_stats_hud</i>|0|Disables opening the challenge mode stats HUD. Greater than 1 specifies a custom amount of ticks to leave leaderboard open. -1 closes instantly.|
 |<i title="Portal 2">sar_disable_challenge_stats_hud_partner</i>|1|Closes the challenge mode stats HUD after your coop partner does.|
 |sar_disable_coop_score_hud|0|Disables the coop score HUD which appears in demo playback.|
@@ -236,6 +246,7 @@
 |sar_give_fly|cmd|sar_give_fly [n] - gives the player in slot n (0 by default) preserved crouchfly.|
 |sar_groundframes_reset|cmd|sar_groundframes_reset - reset recorded groundframe statistics.|
 |sar_groundframes_total|cmd|sar_groundframes_total [slot] - output a summary of groundframe counts for the given player slot.|
+|sar_hud_align|0|Alignment of HUD. (0 = left, 1 = center, 2 = right).|
 |sar_hud_angles|0|Draws absolute view angles of the client.<br>0 = Default,<br>1 = XY,<br>2 = XYZ,<br>3 = X,<br>4 = Y.|
 |sar_hud_avg|0|Draws calculated average of timer.|
 |sar_hud_bg|0|Enable the SAR HUD background.|
@@ -251,7 +262,7 @@
 |sar_hud_ghost_spec|0|Show the name of the ghost you're currently spectating.|
 |sar_hud_grounded|0|Draws the state of player being on ground.|
 |sar_hud_groundframes|0|Draws the number of ground frames since last landing. Setting it to 2 preserves the value.|
-|sar_hud_groundspeed|0|Draw the speed of the player upon leaving the ground.|
+|sar_hud_groundspeed|0|Draw the speed of the player upon leaving the ground.<br>0 = Default,<br>1 = Groundspeed,<br>2 = Groundspeed (Gain)|
 |sar_hud_hide_text|cmd|sar_hud_hide_text \<id\|all> - hides the nth text value in the HUD|
 |sar_hud_inspection|0|Draws entity inspection data.|
 |sar_hud_jump|0|Draws current jump distance.|
@@ -351,61 +362,61 @@
 |sar_netmessage_enable|1|Enable sending NetMessages. Disabling this can break other features.|
 |sar_nextdemo|cmd|sar_nextdemo - plays the next demo in demo queue|
 |sar_on_cfg_message|cmd|sar_on_cfg_message \<command> [args]... - registers a command to be run when partner sends a custom message (_sar_cfg_message svar)|
-|sar_on_cfg_message_clear|cmd|sar_on_cfg_message_clear - clears commands registered on event "cfg_message"|
+|sar_on_cfg_message_clear|cmd|sar_on_cfg_message_clear [id] - clears command(s) registered on event "cfg_message"|
 |sar_on_cfg_message_list|cmd|sar_on_cfg_message_list - lists commands registered on event "cfg_message"|
 |sar_on_config_exec|cmd|sar_on_config_exec \<command> [args]... - registers a command to be run on config.cfg exec|
-|sar_on_config_exec_clear|cmd|sar_on_config_exec_clear - clears commands registered on event "config_exec"|
+|sar_on_config_exec_clear|cmd|sar_on_config_exec_clear [id] - clears command(s) registered on event "config_exec"|
 |sar_on_config_exec_list|cmd|sar_on_config_exec_list - lists commands registered on event "config_exec"|
 |sar_on_coop_reset_done|cmd|sar_on_coop_reset_done \<command> [args]... - registers a command to be run when coop reset is completed|
-|sar_on_coop_reset_done_clear|cmd|sar_on_coop_reset_done_clear - clears commands registered on event "coop_reset_done"|
+|sar_on_coop_reset_done_clear|cmd|sar_on_coop_reset_done_clear [id] - clears command(s) registered on event "coop_reset_done"|
 |sar_on_coop_reset_done_list|cmd|sar_on_coop_reset_done_list - lists commands registered on event "coop_reset_done"|
 |sar_on_coop_reset_remote|cmd|sar_on_coop_reset_remote \<command> [args]... - registers a command to be run when coop reset run remotely|
-|sar_on_coop_reset_remote_clear|cmd|sar_on_coop_reset_remote_clear - clears commands registered on event "coop_reset_remote"|
+|sar_on_coop_reset_remote_clear|cmd|sar_on_coop_reset_remote_clear [id] - clears command(s) registered on event "coop_reset_remote"|
 |sar_on_coop_reset_remote_list|cmd|sar_on_coop_reset_remote_list - lists commands registered on event "coop_reset_remote"|
 |sar_on_coop_spawn|cmd|sar_on_coop_spawn \<command> [args]... - registers a command to be run on coop spawn|
-|sar_on_coop_spawn_clear|cmd|sar_on_coop_spawn_clear - clears commands registered on event "coop_spawn"|
+|sar_on_coop_spawn_clear|cmd|sar_on_coop_spawn_clear [id] - clears command(s) registered on event "coop_spawn"|
 |sar_on_coop_spawn_list|cmd|sar_on_coop_spawn_list - lists commands registered on event "coop_spawn"|
 |sar_on_demo_start|cmd|sar_on_demo_start \<command> [args]... - registers a command to be run when demo playback starts|
-|sar_on_demo_start_clear|cmd|sar_on_demo_start_clear - clears commands registered on event "demo_start"|
+|sar_on_demo_start_clear|cmd|sar_on_demo_start_clear [id] - clears command(s) registered on event "demo_start"|
 |sar_on_demo_start_list|cmd|sar_on_demo_start_list - lists commands registered on event "demo_start"|
 |sar_on_demo_stop|cmd|sar_on_demo_stop \<command> [args]... - registers a command to be run when demo playback stops|
-|sar_on_demo_stop_clear|cmd|sar_on_demo_stop_clear - clears commands registered on event "demo_stop"|
+|sar_on_demo_stop_clear|cmd|sar_on_demo_stop_clear [id] - clears command(s) registered on event "demo_stop"|
 |sar_on_demo_stop_list|cmd|sar_on_demo_stop_list - lists commands registered on event "demo_stop"|
 |sar_on_exit|cmd|sar_on_exit \<command> [args]... - registers a command to be run on game exit|
-|sar_on_exit_clear|cmd|sar_on_exit_clear - clears commands registered on event "exit"|
+|sar_on_exit_clear|cmd|sar_on_exit_clear [id] - clears command(s) registered on event "exit"|
 |sar_on_exit_list|cmd|sar_on_exit_list - lists commands registered on event "exit"|
 |sar_on_flags|cmd|sar_on_flags \<command> [args]... - registers a command to be run when CM flags are hit|
-|sar_on_flags_clear|cmd|sar_on_flags_clear - clears commands registered on event "flags"|
+|sar_on_flags_clear|cmd|sar_on_flags_clear [id] - clears command(s) registered on event "flags"|
 |sar_on_flags_list|cmd|sar_on_flags_list - lists commands registered on event "flags"|
 |sar_on_load|cmd|sar_on_load \<command> [args]... - registers a command to be run on session start|
-|sar_on_load_clear|cmd|sar_on_load_clear - clears commands registered on event "load"|
+|sar_on_load_clear|cmd|sar_on_load_clear [id] - clears command(s) registered on event "load"|
 |sar_on_load_list|cmd|sar_on_load_list - lists commands registered on event "load"|
 |sar_on_not_pb|cmd|sar_on_not_pb \<command> [args]... - registers a command to be run when auto-submitter detects not PB|
-|sar_on_not_pb_clear|cmd|sar_on_not_pb_clear - clears commands registered on event "not_pb"|
+|sar_on_not_pb_clear|cmd|sar_on_not_pb_clear [id] - clears command(s) registered on event "not_pb"|
 |sar_on_not_pb_list|cmd|sar_on_not_pb_list - lists commands registered on event "not_pb"|
 |sar_on_pb|cmd|sar_on_pb \<command> [args]... - registers a command to be run when auto-submitter detects PB|
-|sar_on_pb_clear|cmd|sar_on_pb_clear - clears commands registered on event "pb"|
+|sar_on_pb_clear|cmd|sar_on_pb_clear [id] - clears command(s) registered on event "pb"|
 |sar_on_pb_list|cmd|sar_on_pb_list - lists commands registered on event "pb"|
 |sar_on_renderer_finish|cmd|sar_on_renderer_finish \<command> [args]... - registers a command to be run when renderer finishes|
-|sar_on_renderer_finish_clear|cmd|sar_on_renderer_finish_clear - clears commands registered on event "renderer_finish"|
+|sar_on_renderer_finish_clear|cmd|sar_on_renderer_finish_clear [id] - clears command(s) registered on event "renderer_finish"|
 |sar_on_renderer_finish_list|cmd|sar_on_renderer_finish_list - lists commands registered on event "renderer_finish"|
 |sar_on_renderer_start|cmd|sar_on_renderer_start \<command> [args]... - registers a command to be run when renderer starts|
-|sar_on_renderer_start_clear|cmd|sar_on_renderer_start_clear - clears commands registered on event "renderer_start"|
+|sar_on_renderer_start_clear|cmd|sar_on_renderer_start_clear [id] - clears command(s) registered on event "renderer_start"|
 |sar_on_renderer_start_list|cmd|sar_on_renderer_start_list - lists commands registered on event "renderer_start"|
 |sar_on_session_end|cmd|sar_on_session_end \<command> [args]... - registers a command to be run on session end|
-|sar_on_session_end_clear|cmd|sar_on_session_end_clear - clears commands registered on event "session_end"|
+|sar_on_session_end_clear|cmd|sar_on_session_end_clear [id] - clears command(s) registered on event "session_end"|
 |sar_on_session_end_list|cmd|sar_on_session_end_list - lists commands registered on event "session_end"|
 |sar_on_speedrun_finish|cmd|sar_on_speedrun_finish \<command> [args]... - registers a command to be run when a speedrun finishes|
-|sar_on_speedrun_finish_clear|cmd|sar_on_speedrun_finish_clear - clears commands registered on event "speedrun_finish"|
+|sar_on_speedrun_finish_clear|cmd|sar_on_speedrun_finish_clear [id] - clears command(s) registered on event "speedrun_finish"|
 |sar_on_speedrun_finish_list|cmd|sar_on_speedrun_finish_list - lists commands registered on event "speedrun_finish"|
 |sar_on_stuck|cmd|sar_on_stuck \<command> [args]... - registers a command to be run when the player gets stuck (singleplayer) (requires cheats)|
-|sar_on_stuck_clear|cmd|sar_on_stuck_clear - clears commands registered on event "stuck"|
+|sar_on_stuck_clear|cmd|sar_on_stuck_clear [id] - clears command(s) registered on event "stuck"|
 |sar_on_stuck_list|cmd|sar_on_stuck_list - lists commands registered on event "stuck"|
 |sar_on_tas_end|cmd|sar_on_tas_end \<command> [args]... - registers a command to be run when TAS script playback ends|
-|sar_on_tas_end_clear|cmd|sar_on_tas_end_clear - clears commands registered on event "tas_end"|
+|sar_on_tas_end_clear|cmd|sar_on_tas_end_clear [id] - clears command(s) registered on event "tas_end"|
 |sar_on_tas_end_list|cmd|sar_on_tas_end_list - lists commands registered on event "tas_end"|
 |sar_on_tas_start|cmd|sar_on_tas_start \<command> [args]... - registers a command to be run when TAS script playback starts|
-|sar_on_tas_start_clear|cmd|sar_on_tas_start_clear - clears commands registered on event "tas_start"|
+|sar_on_tas_start_clear|cmd|sar_on_tas_start_clear [id] - clears command(s) registered on event "tas_start"|
 |sar_on_tas_start_list|cmd|sar_on_tas_start_list - lists commands registered on event "tas_start"|
 |sar_paint_reseed|cmd|sar_paint_reseed \<seed> - re-seed all paint sprayers in the map to the given value (-9999 to 9999 inclusive)|
 |sar_patch_bhop|0|Patches bhop by limiting wish direction if your velocity is too high.|
@@ -673,7 +684,7 @@
 |sar_transition_timer|0|Output how slow your dialogue fade was.|
 |sar_twitch_chat_channel||The Twitch channel to connect to.|
 |sar_twitch_chat_color|255 255 255|The color of the Twitch chat messages.|
-|sar_twitch_chat_enabled|0|Enables Twitch chat integration.|
+|sar_twitch_chat_enabled|0|Enables Twitch chat integration. 2 enables spectator command !spec|
 |sar_unlocked_chapters|-1|Max unlocked chapter.|
 |sar_update|cmd|sar_update [release\|pre\|canary] [exit\|restart] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade|
 |sar_velocitygraph|0|Shows velocity graph.|

@@ -2,6 +2,7 @@
 #include "Command.hpp"
 #include "Features/Demo/GhostEntity.hpp"
 #include "Features/Hud/Hud.hpp"
+#include "SFML/Audio.hpp"
 #include "SFML/Network.hpp"
 #include "Utils/SDK.hpp"
 #include "Variable.hpp"
@@ -11,6 +12,7 @@
 #include <condition_variable>
 #include <memory>
 #include <mutex>
+#include <queue>
 #include <thread>
 #include <vector>
 
@@ -28,6 +30,85 @@ enum class HEADER {
 	SPEEDRUN_FINISH,
 	MODEL_CHANGE,
 	COLOR_CHANGE,
+	TAUNT,
+	LOCATOR,
+	VOICE,
+};
+
+class VoiceStream : public sf::SoundStream {
+public:
+	VoiceStream(unsigned int sampleRate) {
+		initialize(1, sampleRate, {sf::SoundChannel::Mono});
+	}
+
+	~VoiceStream() override {
+		stop();
+		{
+			std::unique_lock<std::mutex> lock(mutex);
+			stopRequested = true;
+		}
+		cv.notify_all();
+		{
+			std::lock_guard<std::mutex> lock(mutex);
+			while (!bufferQueue.empty()) {
+				bufferQueue.pop();
+			}
+			currentBuffer.clear();
+		}
+	}
+
+	bool onGetData(Chunk &data) override {
+		std::unique_lock<std::mutex> lock(mutex);
+
+		// wait for data or stop signal with timeout to prevent deadlock.
+		cv.wait_for(lock, std::chrono::milliseconds(100), [&] {
+			return !bufferQueue.empty() || stopRequested;
+		});
+
+		if (stopRequested || bufferQueue.empty()) {
+			return false;
+		}
+
+		currentBuffer = std::move(bufferQueue.front());
+		bufferQueue.pop();
+
+		data.samples = currentBuffer.data();
+		data.sampleCount = currentBuffer.size();
+		return true;
+	}
+
+	void onSeek(sf::Time) override {}
+
+	void pushSamples(const int16_t *samples, std::size_t count) {
+		{
+			std::lock_guard<std::mutex> lock(mutex);
+			if (stopRequested) return;
+
+			// prevent buffer overflow - drop old data if queue is too large.
+			if (bufferQueue.size() > 10) {
+				bufferQueue.pop();
+			}
+
+			bufferQueue.emplace(samples, samples + count);
+		}
+		cv.notify_one();
+	}
+
+	void stopStream() {
+		stop();  // stop playback first.
+		{
+			std::lock_guard<std::mutex> lock(mutex);
+			stopRequested = true;
+		}
+		cv.notify_all();
+	}
+
+private:
+	std::mutex mutex;
+	std::condition_variable cv;
+	std::queue<std::vector<int16_t>> bufferQueue;
+	std::vector<int16_t> currentBuffer;
+	bool stopRequested = false;
 };
 
 class NetworkManager {
@@ -37,10 +118,13 @@ public:
 	sf::SocketSelector selector;
 	sf::IpAddress serverIP;
 	unsigned short int serverPort;
-	sf::Uint32 ID;
+	uint32_t ID;
 
 	std::mutex ghostPoolLock;
 	std::vector<std::shared_ptr<GhostEntity>> ghostPool;
+
+	std::mutex voiceStreamsLock;
+	std::unordered_map<uint32_t, std::shared_ptr<VoiceStream>> voiceStreams;
 
 	std::thread networkThread;
 	std::condition_variable waitForRunning;
@@ -63,8 +147,8 @@ public:
 	std::string modelName;
 	bool spectator;
 
-	sf::Uint32 splitTicks = -1;
-	sf::Uint32 splitTicksTotal = -1;
+	uint32_t splitTicks = -1;
+	uint32_t splitTicksTotal = -1;
 
 	bool disableSyncForLoad = false;
 
@@ -91,18 +175,20 @@ public:
 	void Treat(sf::Packet &packet, bool udp);
 
 	void UpdateGhostsPosition();
-	std::shared_ptr<GhostEntity> GetGhostByID(sf::Uint32 ID);
+	std::shared_ptr<GhostEntity> GetGhostByID(uint32_t ID);
 	void UpdateGhostsSameMap();
 	void UpdateModel(const std::string modelName);
 	bool AreAllGhostsAheadOrSameMap();
 	void SpawnAllGhosts();
 	void DeleteAllGhosts();
 	void UpdateColor();
+	void NotifyTaunt(const std::string name);
+	void NotifyLocator(Vector position, Vector normal);
 
-	void SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration);
-	//Need this function to measure the ping in order to start the countdown at the same time
+	void SetupCountdown(std::string preCommands, std::string postCommands, uint32_t duration);
+	//	Need this function to measure the ping in order to start the countdown at the same time
 	void StartCountdown();
-	//Print the state of the countdown
+	//	Print the state of the countdown
 	void UpdateCountdown();
 
 	bool IsSyncing();

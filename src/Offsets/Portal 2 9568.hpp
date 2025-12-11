@@ -2,6 +2,7 @@
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
+// Portal 2 Steam, sourcemods, The Cleaning Game, Divinity
 
 
 // Interface
@@ -381,6 +382,7 @@ OFFSET_DEFAULT(host_frametime, 92, 81)
 OFFSET_DEFAULT(say_callback_insn, 52, 55)
 OFFSET_DEFAULT(Host_Say_insn, 0x335, 0x36C)
 OFFSET_DEFAULT(portalsThruPortals, 391, 388)
+OFFSET_DEFAULT(portalsThruPortalsValOn, 0x00, 0x82)
 
 // clang-format off
 
@@ -434,6 +436,12 @@ SIGSCAN_DEFAULT(GetChapterProgress, "56 8B 35 ? ? ? ? 57 8B F9 FF D6 8B 10 8B C8
 
 SIGSCAN_DEFAULT(LoadingProgress__SetupControlStatesInstruction, "66 C7 86 ? ? ? ? ? ? EB", "66 89 83 ? ? ? ? E9 ? ? ? ? ? ? ? ? ? ? ? 85 F6") // "vgui/loading_screens/loadingscreen_coop" xref -> LoadingProgress::SetupControlStates -> m_bDrawProgress set to 0
 OFFSET_DEFAULT(LoadingProgress__SetupControlStatesBoolOffset, 7, 5)
+
+SIGSCAN_DEFAULT(PrecacheParticleSystem, "55 8B EC 8B 0D ? ? ? ? 8B 01 8B 50 ? 56 57",
+                                        "56 53 83 EC 10 A1 ? ? ? ? 8B 74 24 ? 8B 10 6A 00 6A FF") // "electrical_arc_01" xref -> obvious FUN(string) with others -> CParticleSystemMgr::PrecacheParticleSystem
+
+SIGSCAN_DEFAULT(DispatchParticleEffect, "55 8B EC 8B 45 ? 50 E8 ? ? ? ? 8B 4D ? 8B 55 ? F3 0F 7E 45 ? 83 C4 04 51 8B 4D ? 52 8B 55 ? 51 83 EC 0C 8B CC 66 0F D6 01 F3 0F 7E 45 ? 89 51 ? 8B 55 ? 83 EC 0C 8B CC 66 0F D6 01 F3 0F 7E 45",
+                                        "53 81 EC 84 00 00 00 8B 9C 24 ? ? ? ? FF B4 24 ? ? ? ? E8 ? ? ? ? 31 D2 F3 0F 10 84 24 ? ? ? ? C7 44 24 ? FF FF FF FF") // "projected_wall_impact" xref -> either usage same function -> DispatchParticleEffect
 
 // Engine
 SIGSCAN_DEFAULT(ParseSmoothingInfoSig, "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", ""); // "cl_demosmootherpanel.cpp" xref -> CDemoSmootherPanel::ParseSmoothingInfo
@@ -512,9 +520,8 @@ OFFSET_DEFAULT(aircontrol_fling_speedOff, 3, 3)
 SIGSCAN_DEFAULT(FloorReportalBranch, "75 7D 8B 8E C0 04 00 00",
                                      "75 ? 8B 85 ? ? ? ? 8B 0D") // "Portal.open_red" xref(nothing after if) -> CProp_Portal::NewLocation -> first function call CPortal_Base2D::NewLocation -> 4x func call followed by test, [jnz]
 
-//  TODO: Linux Support
 SIGSCAN_DEFAULT(CPortal_Player__PollForUseEntity_CheckMP, "74 ? ? ? 8B 82 ? ? ? ? FF D0 84 C0 74 ? 8B CE",
-                                                          "") // CPortal_Player vtable -> Add offset 0x6D8 -> CPortal_Player::PlayerUse -> Second function call from disassembly -> CPortal_Player::PollForUseEntity -> jz instruction
+                                                          "74 ? 8B 10 83 EC 0C 50 FF 92 88 00 00 00 83 C4 10 84 C0 ? ? ? ? ? ? ? ? ? ? ? ? ? 00 00") // "OnJump" xref -> CPortal_Player:PreThink -> CBasePlayer::PreThink -> CBasePlayer::ItemPreFrame -> CBasePlayer::PlayerUse -> CPortal_Player vtable offset -> CPortal_Player::PlayerUse -> Second function call from disassembly -> CPortal_Player::PollForUseEntity -> jz instruction
 
 // VPhysics
 OFFSET_EMPTY(DestroyEnvironment)

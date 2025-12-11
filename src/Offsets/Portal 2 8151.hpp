@@ -1,4 +1,5 @@
 #include "Offsets/Portal 2 9568.hpp"
+// Portal Stories: Mel, Reloaded
 
 OFFSET_LINUX(tickcount, 74)
 OFFSET_LINUX(interval_per_tick, 82)
@@ -44,6 +45,7 @@ OFFSET_LINUX(host_frametime, 70)
 OFFSET_LINUX(say_callback_insn, 88)
 OFFSET_LINUX(Host_Say_insn, 0x37A)
 OFFSET_LINUX(portalsThruPortals, 462)
+OFFSET_LINUX(portalsThruPortalsValOn, 0xEB)
 
 // clang-format off
 
